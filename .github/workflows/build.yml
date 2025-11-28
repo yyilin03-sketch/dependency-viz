@@ -1,0 +1,33 @@
+name: Build Windows Exe
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest  # 指定要借用一台 Windows 电脑
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    - name: Install Dependencies
+      run: |
+        pip install pyside6 hanlp_restful spacy stanza pyinstaller
+        python -m spacy download zh_core_web_sm
+
+    - name: Build EXE
+      # 这里执行打包命令，main.py 是你的代码文件名
+      run: pyinstaller --noconfirm --onefile --windowed --name "SyntaxLab" main.py
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4  # 把打包好的文件传回来
+      with:
+        name: SyntaxLab_Windows_App
+        path: dist/SyntaxLab.exe
