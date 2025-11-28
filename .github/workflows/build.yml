@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest  # 指定要借用一台 Windows 电脑
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -17,17 +17,24 @@ jobs:
       with:
         python-version: "3.9"
 
+    # 👇 这里的 spacy 已经被我删掉了，只保留 hanlp 和 stanza
     - name: Install Dependencies
       run: |
-        pip install pyside6 hanlp_restful spacy stanza pyinstaller
-        python -m spacy download zh_core_web_sm
+        pip install --upgrade pip
+        pip install pyside6 hanlp_restful stanza pyinstaller
 
+    # 👇 打包命令里也去掉了 spacy 的相关配置
     - name: Build EXE
-      # 这里执行打包命令，main.py 是你的代码文件名
-      run: pyinstaller --noconfirm --onefile --windowed --name "SyntaxLab" main.py
+      run: >
+        pyinstaller --noconfirm --onefile --windowed --name "SyntaxLab_Lite"
+        --hidden-import="hanlp_restful"
+        --hidden-import="stanza"
+        --collect-all="hanlp_restful"
+        --collect-all="stanza"
+        main.py
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v4  # 把打包好的文件传回来
+      uses: actions/upload-artifact@v4
       with:
         name: SyntaxLab_Windows_App
-        path: dist/SyntaxLab.exe
+        path: dist/SyntaxLab_Lite.exe
